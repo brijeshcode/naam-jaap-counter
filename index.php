@@ -36,14 +36,30 @@
             justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
             box-shadow: 0 2px 8px rgba(0,0,0,0.02); gap: 0.5rem;
         }
-        .brand { font-size: 1.1rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.4rem; }
-        .hdr-actions { display: flex; align-items: center; gap: 0.35rem; }
-        .icon-btn {
-            background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.4rem;
-            border-radius: 50%; outline: none; display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted); transition: background 0.2s;
+        .brand { font-size: 1rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.4rem; line-height: 1.15; }
+        .hdr-actions { display: flex; align-items: center; gap: 0.3rem; }
+        /* A settings cluster (language · number format · theme) sits in a tinted tray,
+           with stateless actions (refresh, logout) as bare icons beside it. */
+        .hdr-tray { display: flex; align-items: center; gap: 0.15rem; padding: 0.15rem; border-radius: 0.7rem; background: var(--bg-main); border: 1px solid var(--border); }
+        .hdr-btn {
+            display: flex; align-items: center; justify-content: center; width: 1.85rem; height: 1.85rem;
+            padding: 0; border: none; border-radius: 0.55rem; background: none; color: var(--text-muted);
+            cursor: pointer; outline: none; transition: background 0.15s, color 0.15s;
         }
-        .icon-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .hdr-btn:hover { background: var(--primary-light); color: var(--primary); }
+        .hdr-btn svg { width: 17px; height: 17px; }
+        .hdr-num { width: auto; min-width: 2.1rem; padding: 0 0.4rem; font-size: 0.74rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text-main); }
+        .hdr-lang { position: relative; display: flex; align-items: center; }
+        .hdr-lang select {
+            appearance: none; -webkit-appearance: none; height: 1.85rem; padding: 0 1.15rem 0 0.5rem;
+            border: none; border-radius: 0.55rem; background: none; color: var(--text-main);
+            font-size: 0.74rem; font-weight: 800; cursor: pointer; outline: none;
+        }
+        .hdr-lang select:hover { color: var(--primary); }
+        .hdr-lang::after {
+            content: ''; position: absolute; right: 0.4rem; pointer-events: none; width: 5px; height: 5px;
+            border-right: 1.5px solid var(--text-muted); border-bottom: 1.5px solid var(--text-muted); transform: translateY(-25%) rotate(45deg);
+        }
         .sync-flag { font-size: 0.68rem; color: #ef4444; font-weight: 600; }
         main {
             flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem;
@@ -199,14 +215,25 @@
             <div class="brand">🙏 <span x-text="t('appTitle')"></span></div>
             <div class="hdr-actions">
                 <span class="sync-flag" x-show="syncMsg" x-text="syncMsg"></span>
-                <select x-model="lang" @change="setLang(lang)" class="icon-btn" style="font-size:0.8rem;padding:0.25rem;">
-                    <option value="en">EN</option>
-                    <option value="hi">हि</option>
-                </select>
-                <button class="icon-btn" @click="toggleK()" :title="'1,000 / 1K'" x-text="useK ? '1K' : '1,0'"></button>
-                <button class="icon-btn" data-testid="refresh" @click="refresh()" :title="t('refresh')">⟳</button>
-                <button class="icon-btn" @click="toggleTheme()" x-text="dark ? '☀️' : '🌙'"></button>
-                <button class="icon-btn" @click="logout()" :title="t('logout')">⎋</button>
+                <div class="hdr-tray">
+                    <div class="hdr-lang">
+                        <select x-model="lang" @change="setLang(lang)" :aria-label="t('language')">
+                            <option value="en">EN</option>
+                            <option value="hi">हि</option>
+                        </select>
+                    </div>
+                    <button class="hdr-btn hdr-num" @click="toggleK()" :title="t('numberFormat')" x-text="useK ? '1.2K' : '1,234'"></button>
+                    <button class="hdr-btn" @click="toggleTheme()" :title="t('theme')" :aria-label="t('theme')">
+                        <svg x-show="!dark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="#fcd34d" stroke="#f59e0b" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                        <svg x-show="dark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="#fbbf24"/><g stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2"/><path d="M12 19.3v2.2"/><path d="M4.2 4.2l1.6 1.6"/><path d="M18.2 18.2l1.6 1.6"/><path d="M2.5 12h2.2"/><path d="M19.3 12h2.2"/><path d="M4.2 19.8l1.6-1.6"/><path d="M18.2 5.8l1.6-1.6"/></g></svg>
+                    </button>
+                </div>
+                <button class="hdr-btn" data-testid="refresh" @click="refresh()" :title="t('refresh')" :aria-label="t('refresh')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+                </button>
+                <button class="hdr-btn" @click="logout()" :title="t('logout')" :aria-label="t('logout')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                </button>
             </div>
         </header>
 
@@ -269,6 +296,38 @@
         <!-- HISTORY VIEW -->
         <section x-show="subview==='history'" style="flex:1;">
             <div class="history-wrap">
+                <div class="ledger" style="margin-bottom: 1rem;">
+                    <div class="ledger-cell today">
+                        <div class="ledger-eyebrow">
+                            <span class="kpi-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M8 17v-5"/><path d="M13 17V8"/><path d="M18 17v-3"/></svg>
+                            </span>
+                            <span x-text="t('selected')"></span>
+                        </div>
+                        <div class="ledger-num" :class="numSize(fmt(rangeSum))" data-testid="range-sum" x-text="fmt(rangeSum)"></div>
+                        <div class="mala-pill">
+                            <span class="bead-glyph">
+                                <svg width="34" height="8" viewBox="0 0 34 8" fill="none" aria-hidden="true"><line x1="1" y1="4" x2="33" y2="4" stroke="currentColor" stroke-width="1" opacity="0.35"/><circle cx="4" cy="4" r="2.5" fill="currentColor"/><circle cx="12" cy="4" r="2.5" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="28" cy="4" r="2.5" fill="currentColor"/></svg>
+                            </span>
+                            <span><b x-text="fmt(Math.floor(rangeSum / 108))"></b> <span x-text="t('malas')"></span></span>
+                        </div>
+                    </div>
+                    <div class="ledger-cell total">
+                        <div class="ledger-eyebrow">
+                            <span class="kpi-chip">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>
+                            </span>
+                            <span x-text="t('total')"></span>
+                        </div>
+                        <div class="ledger-num" :class="numSize(fmt(total))" x-text="fmt(total)"></div>
+                        <div class="mala-pill">
+                            <span class="bead-glyph">
+                                <svg width="34" height="8" viewBox="0 0 34 8" fill="none" aria-hidden="true"><line x1="1" y1="4" x2="33" y2="4" stroke="currentColor" stroke-width="1" opacity="0.35"/><circle cx="4" cy="4" r="2.5" fill="currentColor"/><circle cx="12" cy="4" r="2.5" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="28" cy="4" r="2.5" fill="currentColor"/></svg>
+                            </span>
+                            <span><b x-text="fmt(malas)"></b> <span x-text="t('malas')"></span></span>
+                        </div>
+                    </div>
+                </div>
                 <div class="chart-types">
                     <button :class="chartType==='weekly' ? 'active' : ''" data-testid="ct-weekly" @click="setChartType('weekly')" x-text="t('weekly')"></button>
                     <button :class="chartType==='monthly' ? 'active' : ''" data-testid="ct-monthly" @click="setChartType('monthly')" x-text="t('monthly')"></button>
@@ -296,28 +355,29 @@
 
     <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-    // Draw each bar's value above it.
+    // Draw each bar's value above it (formatted + theme-aware colour via plugin options).
     const barLabels = {
       id: 'barLabels',
-      afterDatasetsDraw(chart) {
+      afterDatasetsDraw(chart, args, options) {
         const { ctx } = chart;
+        const fmt = options.fmt || (v => v);
+        ctx.save();
+        ctx.fillStyle = options.color || '#333';
+        ctx.font = '700 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
         chart.getDatasetMeta(0).data.forEach((bar, i) => {
           const v = chart.data.datasets[0].data[i];
           if (!v) return;
-          ctx.save();
-          ctx.fillStyle = '#333';
-          ctx.font = '600 11px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
-          ctx.fillText(v, bar.x, bar.y - 2);
-          ctx.restore();
+          ctx.fillText(fmt(v), bar.x, bar.y - 2);
         });
+        ctx.restore();
       }
     };
     function app() {
       return {
         view: 'auth', authMode: 'login', subview: 'counter',
-        chartType: 'weekly', chartCursor: 0, chart: null, chartRange: '',
+        chartType: 'weekly', chartCursor: 0, chart: null, chartRange: '', rangeSum: 0,
         lang: localStorage.getItem('nj_lang') || 'en',
         useK: localStorage.getItem('nj_k') === '1',
         dark: localStorage.getItem('nj_d') === 'true',
@@ -329,7 +389,7 @@
         lastSync: 0, syncMsg: '', _syncStarted: false,
 
         t(k) { return (window.NJ_I18N[this.lang] || window.NJ_I18N.en)[k] || k; },
-        fmt(n) { return window.NJUtil.formatNumber(n, this.useK); },
+        fmt(n) { return window.NJUtil.formatNumber(n, this.useK, this.lang); },
         // Shrink KPI numbers so long values (lakhs/crores) never clip the ledger cell.
         numSize(s) { const n = (s || '').length; return n > 9 ? 'xs' : n > 6 ? 'sm' : ''; },
         authErrMsg() {
@@ -338,9 +398,10 @@
                       invalid: 'Username required and password must be at least 4 characters.' };
           return m[this.authError] || this.authError;
         },
-        setLang(l) { this.lang = l; localStorage.setItem('nj_lang', l); },
-        toggleK() { this.useK = !this.useK; localStorage.setItem('nj_k', this.useK ? '1' : '0'); },
-        toggleTheme() { this.dark = !this.dark; localStorage.setItem('nj_d', this.dark); },
+        // Redraw so the chart's baked-in colours/number format follow the new setting.
+        setLang(l) { this.lang = l; localStorage.setItem('nj_lang', l); if (this.chart) this.drawChart(); },
+        toggleK() { this.useK = !this.useK; localStorage.setItem('nj_k', this.useK ? '1' : '0'); if (this.chart) this.drawChart(); },
+        toggleTheme() { this.dark = !this.dark; localStorage.setItem('nj_d', this.dark); if (this.chart) this.drawChart(); },
 
         async init() {
           this.loadLocal();
@@ -495,12 +556,25 @@
           if (status === 409) return this.forceLogout();
           if (!data || !data.labels) return;
           this.chartRange = data.range || '';
+          this.rangeSum = data.values.reduce((a, b) => a + Number(b), 0);
           const ctx = document.getElementById('njChart');
           if (this.chart) this.chart.destroy();
+          const tick = this.dark ? '#a3968e' : '#786d66';
+          const grid = this.dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
           this.chart = new Chart(ctx, {
             type: 'bar',
             data: { labels: data.labels, datasets: [{ label: this.t(this.chartType), data: data.values, backgroundColor: '#f97316', borderRadius: 6 }] },
-            options: { responsive: true, layout: { padding: { top: 18 } }, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+            options: {
+              responsive: true, layout: { padding: { top: 18 } },
+              plugins: {
+                legend: { display: false },
+                barLabels: { fmt: (v) => this.fmt(v), color: this.dark ? '#f4efe9' : '#2c2520' }
+              },
+              scales: {
+                y: { beginAtZero: true, ticks: { color: tick, callback: (v) => this.fmt(v) }, grid: { color: grid } },
+                x: { ticks: { color: tick }, grid: { display: false } }
+              }
+            },
             plugins: [barLabels]
           });
         }

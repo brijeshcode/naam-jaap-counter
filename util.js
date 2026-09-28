@@ -1,10 +1,17 @@
-export function formatNumber(n, useK) {
+export function formatNumber(n, useK, lang = 'en') {
   n = Number(n) || 0;
-  if (useK && Math.abs(n) >= 1000) {
-    const v = (n / 1000).toFixed(1).replace(/\.0$/, '');
-    return v + 'K';
+  if (useK) {
+    // Hindi uses the Indian scale (thousand/lakh/crore); English the short scale.
+    const units = lang === 'hi'
+      ? [[1e7, 'Cr'], [1e5, 'L'], [1e3, 'K']]
+      : [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+    const a = Math.abs(n);
+    for (const [threshold, suffix] of units) {
+      if (a >= threshold) return (n / threshold).toFixed(1).replace(/\.0$/, '') + suffix;
+    }
   }
-  return new Intl.NumberFormat('en-US').format(n);
+  // Full number: Indian digit grouping for Hindi (5,00,000), Western for English.
+  return new Intl.NumberFormat(lang === 'hi' ? 'en-IN' : 'en-US').format(n);
 }
 export function deriveStats(total) {
   total = Number(total) || 0;

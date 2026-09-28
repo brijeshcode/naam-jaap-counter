@@ -5,6 +5,13 @@ assert.equal(formatNumber(1234, false), '1,234');
 assert.equal(formatNumber(1200, true), '1.2K');
 assert.equal(formatNumber(2000, true), '2K');       // drop .0
 assert.equal(formatNumber(999, true), '999');       // below 1000, no K
+// English short scale: K / M / B
+assert.equal(formatNumber(1500000, true, 'en'), '1.5M');
+assert.equal(formatNumber(2000000000, true, 'en'), '2B');
+// Hindi Indian scale: K / L (lakh) / Cr (crore)
+assert.equal(formatNumber(150000, true, 'hi'), '1.5L');
+assert.equal(formatNumber(12000000, true, 'hi'), '1.2Cr');
+assert.equal(formatNumber(500000, false, 'hi'), '5,00,000');  // Indian grouping
 
 assert.deepEqual(deriveStats(0), {total:0, malas:0, current:0});
 assert.deepEqual(deriveStats(108), {total:108, malas:1, current:0});
