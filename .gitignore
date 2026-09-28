@@ -1,0 +1,5 @@
+/vendor/
+/.superpowers/
+/node_modules/
+/.env
+/tests/e2e/*.png

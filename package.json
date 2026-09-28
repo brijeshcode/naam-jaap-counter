@@ -1,0 +1,12 @@
+{
+  "name": "naam-jaap-counter",
+  "private": true,
+  "type": "module",
+  "description": "Client assets for the Naam Jaap counter (ESM modules loaded in-browser via <script type=module>).",
+  "scripts": {
+    "test": "node tests/js/test_util.mjs && node tests/js/test_i18n.mjs && node tests/js/test_sync.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

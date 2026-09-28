@@ -1,0 +1,18 @@
+{
+    "name": "brijesh/naam-jaap-counter",
+    "description": "Offline-capable, server-synced Naam Jaap counter",
+    "type": "project",
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "files": [
+            "src/db.php",
+            "src/counts.php",
+            "src/auth.php",
+            "src/charts.php",
+            "src/ratelimit.php",
+            "src/http.php"
+        ]
+    }
+}
