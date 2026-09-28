@@ -43,7 +43,7 @@ switch ($action) {
     case 'chart':
         $uid = require_user($db, $b);
         if ($uid === null) break;
-        out(chart_data($db, $uid, (string)($_GET['type'] ?? 'daily'), (int)($_GET['cursor'] ?? 0)));
+        out(chart_data($db, $uid, (string)($_GET['type'] ?? 'weekly'), (int)($_GET['cursor'] ?? 0)));
         break;
     default:
         http_response_code(400);

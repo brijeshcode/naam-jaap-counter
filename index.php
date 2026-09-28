@@ -222,7 +222,7 @@
         <section x-show="subview==='history'" style="flex:1;">
             <div class="history-wrap">
                 <div class="chart-types">
-                    <button :class="chartType==='daily' ? 'active' : ''" data-testid="ct-daily" @click="setChartType('daily')" x-text="t('daily')"></button>
+                    <button :class="chartType==='weekly' ? 'active' : ''" data-testid="ct-weekly" @click="setChartType('weekly')" x-text="t('weekly')"></button>
                     <button :class="chartType==='monthly' ? 'active' : ''" data-testid="ct-monthly" @click="setChartType('monthly')" x-text="t('monthly')"></button>
                     <button :class="chartType==='yearly' ? 'active' : ''" data-testid="ct-yearly" @click="setChartType('yearly')" x-text="t('yearly')"></button>
                 </div>
@@ -248,10 +248,28 @@
 
     <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    // Draw each bar's value above it.
+    const barLabels = {
+      id: 'barLabels',
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        chart.getDatasetMeta(0).data.forEach((bar, i) => {
+          const v = chart.data.datasets[0].data[i];
+          if (!v) return;
+          ctx.save();
+          ctx.fillStyle = '#333';
+          ctx.font = '600 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(v, bar.x, bar.y - 2);
+          ctx.restore();
+        });
+      }
+    };
     function app() {
       return {
         view: 'auth', authMode: 'login', subview: 'counter',
-        chartType: 'daily', chartCursor: 0, chart: null, chartRange: '',
+        chartType: 'weekly', chartCursor: 0, chart: null, chartRange: '',
         lang: localStorage.getItem('nj_lang') || 'en',
         useK: localStorage.getItem('nj_k') === '1',
         dark: localStorage.getItem('nj_d') === 'true',
@@ -418,13 +436,14 @@
             '&type=' + this.chartType + '&cursor=' + this.chartCursor);
           if (status === 409) return this.forceLogout();
           if (!data || !data.labels) return;
-          this.chartRange = data.labels.length ? (data.labels[0] + ' – ' + data.labels[data.labels.length - 1]) : '';
+          this.chartRange = data.range || '';
           const ctx = document.getElementById('njChart');
           if (this.chart) this.chart.destroy();
           this.chart = new Chart(ctx, {
             type: 'bar',
-            data: { labels: data.labels, datasets: [{ label: this.t(this.chartType), data: data.values, backgroundColor: '#f97316' }] },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            data: { labels: data.labels, datasets: [{ label: this.t(this.chartType), data: data.values, backgroundColor: '#f97316', borderRadius: 6 }] },
+            options: { responsive: true, layout: { padding: { top: 18 } }, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
+            plugins: [barLabels]
           });
         }
       };
