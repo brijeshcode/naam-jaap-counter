@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naam Jaap Counter App</title>
+    <style>
+        /* Base Reset & Variables matching premium spiritual apps */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        :root {
+            --bg-main: #f9f6f0;
+            --bg-card: #ffffff;
+            --text-main: #2c2520;
+            --text-muted: #786d66;
+            --primary: #ea580c;
+            --primary-light: #ffedd5;
+            --bead-off: #e5e0d8;
+            --bead-border: #c4b9ae;
+            --bead-on: #f97316;
+            --bead-glow: rgba(249, 115, 22, 0.4);
+            --border: #ebdcd0;
+        }
+
+        body.dark-mode {
+            --bg-main: #120e0c;
+            --bg-card: #1c1714;
+            --text-main: #f4efe9;
+            --text-muted: #a3968e;
+            --primary: #ff7830;
+            --primary-light: #2c1a10;
+            --bead-off: #2c2420;
+            --bead-border: #423730;
+            --bead-on: #ff7830;
+            --bead-glow: rgba(255, 120, 48, 0.5);
+            --border: #332924;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background-color 0.3s, color 0.3s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Top Header Navigation */
+        header {
+            background-color: var(--bg-card);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .theme-toggle:hover { background-color: rgba(0,0,0,0.03); }
+        body.dark-mode .theme-toggle:hover { background-color: rgba(255,255,255,0.03); }
+
+        /* Core Workspace Viewport */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+
+        /* Counter Metrics Dashboard Row */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.85rem 1rem;
+            border-radius: 1.25rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-val-total { font-size: 1.85rem; font-weight: 800; color: var(--primary); }
+        .stat-val-mala { font-size: 1.85rem; font-weight: 800; color: #b45309; }
+        body.dark-mode .stat-val-mala { color: #f59e0b; }
+
+        /* AUTHENTIC 108 BEAD ROSARY INTERACTION HULL */
+        .mala-canvas-space {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.75rem 0;
+        }
+
+        /* Absolute positioning wrapper containing the beads path */
+        .beads-circle-hull {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Single round bead matching native application physics */
+        .bead {
+            position: absolute;
+            width: 7.5px;
+            height: 7.5px;
+            background-color: var(--bead-off);
+            border: 1px solid var(--bead-border);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            margin-top: -3.75px;
+            margin-left: -3.75px;
+            transform-origin: center center;
+            transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s;
+        }
+
+        /* Chanted Active State - Smooth glowing gold finish */
+        .bead.active {
+            background-color: var(--bead-on);
+            border-color: var(--bead-on);
+            transform: scale(1.4);
+            box-shadow: 0 0 6px var(--bead-glow);
+        }
+
+        /* Core Tap Target Center Button Framework */
+        .tap-btn {
+            position: relative;
+            z-index: 10;
+            width: 236px;
+            height: 236px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border: 8px solid var(--primary-light);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 12px 32px rgba(234, 88, 12, 0.2);
+            transition: transform 0.08s ease;
+        }
+        
+        body.dark-mode .tap-btn {
+            background: linear-gradient(135deg, #ff7830, #e05300);
+            box-shadow: 0 12px 32px rgba(255, 120, 48, 0.15);
+        }
+
+        .tap-btn:active {
+            transform: scale(0.96);
+        }
+
+        .tap-btn .action-txt {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            opacity: 0.85;
+            text-transform: uppercase;
+        }
+
+        .tap-btn .count-display {
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin: 0.15rem 0;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tap-btn .progress-badge {
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.18);
+            padding: 3px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Physical Clicker Synchronization Module */
+        .sync-box {
+            width: 100%;
+            text-align: left;
+        }
+
+        .sync-box h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.85rem;
+            border: 1px solid var(--border);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+        }
+
+        .sync-btn {
+            background-color: var(--text-main);
+            color: var(--bg-main);
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.85rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            outline: none;
+        }
+        
+        body.dark-mode .sync-btn {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .sync-btn:active { transform: scale(0.97); }
+
+        /* Danger Reset Action Area */
+        .action-link-bar {
+            width: 100%;
+            text-align: center;
+        }
+
+        .reset-link {
+            font-size: 0.75rem;
+            color: #ef4444;
+            background: none;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: 0.8;
+            outline: none;
+            transition: opacity 0.2s;
+        }
+        .reset-link:hover { opacity: 1; text-decoration: underline; }
+
+        footer {
+            padding: 0.75rem;
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- APPLICATION CONTROL BAR -->
+    <header>
+        <div class="brand">🙏 Naam Jaap Counter</div>
+        <button id="themeToggleBtn" class="theme-toggle" aria-label="Toggle App Theme">🌙</button>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main>
+        <!-- STATS DATA METRICS -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="stat-label">Total Jaap</div>
+                <div class="stat-val-total" id="txtTotalCount">0</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Total Malas</div>
+                <div class="stat-val-mala" id="txtCompletedMalas">0</div>
+            </div>
+        </div>
+
+        <!-- AUTHENTIC MALA ROSARY DISPLAY -->
+        <div class="mala-canvas-space">
+            <div class="beads-circle-hull" id="beadsCircleHull"></div>
+            
+            <button id="tapBtn" class="tap-btn">
+                <span class="action-txt">Tap to Count</span>
+                <span class="count-display" id="txtMalaCount">0</span>
+                <span class="progress-badge" id="txtProgressLabel">0 / 108</span>
+            </button>
+        </div>
+
+        <!-- PHYSICAL MALAS SYNC INPUT -->
+        <div class="card sync-box">
+            <h3>Add Physical Counter/Mala Counts</h3>
+            <div class="input-row">
+                <input type="number" id="numManualInput" placeholder="Enter count value" min="1" inputmode="numeric">
+                <button id="syncBtn" class="sync-btn">Add Count</button>
+            </div>
+        </div>
+
+        <!-- APP MAINTENANCE ACTIONS -->
+        <div class="action-link-bar">
+            <button id="resetBtn" class="reset-link">Reset Chanting Records</button>
+        </div>
+    </main>
+
+    <!-- METADATA FOOTER -->
+    <footer>
+        Digital Mala Counter Application
+    </footer>
+
+    <!-- ISOLATED EXECUTABLE FRONTEND CONTROLLER -->
+    <script>
+        (function() {
+            // Core component state variables
+            let state = { total: 0, current: 0, malas: 0, dark: false };
+
+            // Math Matrix Component Generator
+            // Places exactly 108 beads perfectly distributed outside the 236px center frame
+            const container = document.getElementById('beadsCircleHull');
+            const beadCount = 108;
+            const radius = 146; // Radius mapping perfectly around the frame bounds
+
+            for (let i = 0; i < beadCount; i++) {
+                let bead = document.createElement('div');
+                bead.className = 'bead';
+                
+                // Calculates positions starting exactly at 12 o'clock top center position (-Math.PI/2)
+                let radians = (i * (2 * Math.PI / beadCount)) - (Math.PI / 2);
+                let posX = Math.cos(radians) * radius;
+                let posY = Math.sin(radians) * radius;
+                
+                // Set native inline transformations bypassing responsive container calculations
+                bead.style.left = '50%';
+                bead.style.top = '50%';
+                bead.style.transform = 'translate(' + posX + 'px, ' + posY + 'px)';
+                
+                container.appendChild(bead);
+            }
+            const beadNodes = container.children;
+
+            // Secure local storage interface execution blocks
+            try {
+                state.total = parseInt(localStorage.getItem('nj_t')) || 0;
+                state.current = parseInt(localStorage.getItem('nj_c')) || 0;
+                state.malas = parseInt(localStorage.getItem('nj_m')) || 0;
+                state.dark = localStorage.getItem('nj_d') === 'true';
+            } catch(e) {}
+
+            function render() {
+                // UI Elements state assignment updates
+                document.getElementById('txtTotalCount').innerText = state.total;
+                document.getElementById('txtCompletedMalas').innerText = state.malas;
+                document.getElementById('txtMalaCount').innerText = state.current;
+                document.getElementById('txtProgressLabel').innerText = state.current + " / 108";
+                
+                // Loop updates light tracking arrays perfectly on the exact 108 node points
+                for (let i = 0; i < beadCount; i++) {
+                    if (i < state.current) {
+                        beadNodes[i].classList.add('active');
+                    } else {
+                        beadNodes[i].classList.remove('active');
+                    }
+                }
+                
+                const body = document.body;
+                const toggle = document.getElementById('themeToggleBtn');
+                if (state.dark) {
+                    body.classList.add('dark-mode');
+                    toggle.innerText = '☀️';
+                } else {
+                    body.classList.remove('dark-mode');
+                    toggle.innerText = '🌙';
+                }
+            }
+
+            function save() {
+                try {
+                    localStorage.setItem('nj_t', state.total);
+                    localStorage.setItem('nj_c', state.current);
+                    localStorage.setItem('nj_m', state.malas);
+                    localStorage.setItem('nj_d', state.dark);
+                } catch(e) {}
+            }
+
+            // Interactive Event Handlers
+            document.getElementById('tapBtn').onclick = function() {
+                state.total++; 
+                state.current++;
+                
+                // Safe vibration controller signature check
+                if (navigator.vibrate) { navigator.vibrate(40); }
+                
+                if (state.current >= 108) { 
+                    state.malas++; 
+                    state.current = 0; 
+                    if (navigator.vibrate) { navigator.vibrate(200); }
+                }
+                save(); 
+                render();
+            };
+
+            document.getElementById('syncBtn').onclick = function() {
+                const input = document.getElementById('numManualInput');
+                const val = parseInt(input.value);
+                if (!val || val <= 0) return;
+                
+                state.total += val;
+                let runningSum = state.current + val;
+                state.malas += Math.floor(runningSum / 108);
+                state.current = runningSum % 108;
+                
+                input.value = '';
+                save(); 
+                render();
+            };
+
+            document.getElementById('themeToggleBtn').onclick = function() {
+                state.dark = !state.dark;
+                save(); 
+                render();
+            };
+
+            document.getElementById('resetBtn').onclick = function() {
+                if (confirm("Are you sure you want to completely reset the records?")) {
+                    state.total = 0; 
+                    state.current = 0; 
+                    state.malas = 0;
+                    save(); 
+                    render();
+                }
+            };
+
+            // Initial view generation call
+            render();
+        })();
+    </script>
+</body>
+</html>
