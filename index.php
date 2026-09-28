@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#ea580c">
     <link rel="manifest" href="manifest.json">
     <title>Naam Jaap Counter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="util.js"></script>
     <script type="module" src="i18n.js"></script>
@@ -46,15 +49,31 @@
             flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem;
             max-width: 420px; width: 100%; margin: 0 auto; justify-content: space-around; gap: 1rem;
         }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; }
+        /* KPI ledger: Today | Total, split by a hairline "thread". */
+        .ledger { display: grid; grid-template-columns: 1fr 1fr; width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1.5rem; overflow: hidden; box-shadow: 0 8px 24px rgba(120, 60, 10, 0.06); }
+        .ledger-cell { padding: 1rem 1.15rem 1.1rem; }
+        .ledger-cell.today { background: linear-gradient(155deg, var(--primary-light), transparent 72%); }
+        .ledger-cell.total { border-left: 1px solid var(--border); }
+        .ledger-eyebrow { display: flex; align-items: center; gap: 0.45rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .kpi-chip { flex: none; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
+        .kpi-chip svg { width: 15px; height: 15px; }
+        .ledger-cell.today .kpi-chip { background: rgba(234, 88, 12, 0.12); color: var(--primary); }
+        .ledger-cell.total .kpi-chip { background: rgba(120, 60, 10, 0.07); color: var(--text-muted); }
+        body.dark-mode .ledger-cell.total .kpi-chip { background: rgba(255, 255, 255, 0.07); }
+        .ledger-num { font-family: 'Fraunces', Georgia, serif; font-size: 2.35rem; font-weight: 600; line-height: 0.95; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .ledger-num.sm { font-size: 1.75rem; }
+        .ledger-num.xs { font-size: 1.35rem; }
+        .ledger-cell.today .ledger-num { color: var(--primary); }
+        .ledger-cell.total .ledger-num { color: var(--text-main); }
+        .mala-pill { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.7rem; padding: 0.24rem 0.65rem 0.24rem 0.55rem; border-radius: 999px; background: rgba(120, 60, 10, 0.06); font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+        body.dark-mode .mala-pill { background: rgba(255, 255, 255, 0.06); }
+        .bead-glyph { display: flex; color: #c2620a; }
+        body.dark-mode .bead-glyph { color: #f59e0b; }
+        .mala-pill b { font-weight: 700; color: var(--text-main); }
         .card {
             background-color: var(--bg-card); border: 1px solid var(--border); padding: 0.85rem 1rem;
             border-radius: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.01);
         }
-        .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
-        .stat-val-total { font-size: 1.85rem; font-weight: 800; color: var(--primary); }
-        .stat-val-mala { font-size: 1.85rem; font-weight: 800; color: #b45309; }
-        body.dark-mode .stat-val-mala { color: #f59e0b; }
         .mala-canvas-space { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; margin: 0.75rem 0; }
         .beads-circle-hull { position: absolute; width: 320px; height: 320px; top: 0; left: 0; border-radius: 50%; pointer-events: none; }
         .bead {
@@ -63,17 +82,35 @@
             margin-top: -3.75px; margin-left: -3.75px; transform-origin: center center;
             transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s;
         }
-        .bead.active { background-color: var(--bead-on); border-color: var(--bead-on); transform: scale(1.4); box-shadow: 0 0 6px var(--bead-glow); }
+        .bead.active { background-color: var(--bead-on); border-color: var(--bead-on); transform: scale(1.5); box-shadow: 0 0 6px var(--bead-glow); z-index: 2; }
         .tap-btn {
-            position: relative; z-index: 10; width: 236px; height: 236px; border-radius: 50%;
+            position: relative; z-index: 10; width: 236px; height: 236px; border-radius: 50%; overflow: hidden;
             background: linear-gradient(135deg, #f97316, #ea580c); border: 8px solid var(--primary-light);
             color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; outline: none; box-shadow: 0 12px 32px rgba(234, 88, 12, 0.2); transition: transform 0.08s ease;
+            cursor: pointer; outline: none; box-shadow: 0 12px 32px rgba(234, 88, 12, 0.2);
+            transition: transform 0.08s ease; animation: breathe 3.6s ease-in-out infinite;
         }
         body.dark-mode .tap-btn { background: linear-gradient(135deg, #ff7830, #e05300); box-shadow: 0 12px 32px rgba(255, 120, 48, 0.15); }
         .tap-btn:active { transform: scale(0.96); }
+        /* Ripple that blooms from the centre on each tap. */
+        .tap-btn::after {
+            content: ''; position: absolute; inset: -20%; border-radius: 50%; pointer-events: none;
+            background: radial-gradient(circle, rgba(255,255,255,0.55), transparent 62%); opacity: 0; transform: scale(0.25);
+        }
+        .tap-btn.rippling::after { animation: ripple 0.55s ease-out; }
+        @keyframes ripple { 0% { opacity: 0.6; transform: scale(0.25); } 100% { opacity: 0; transform: scale(1.4); } }
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 12px 32px rgba(234, 88, 12, 0.18); }
+            50% { box-shadow: 0 14px 44px rgba(234, 88, 12, 0.38); }
+        }
         .tap-btn .action-txt { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; opacity: 0.85; text-transform: uppercase; }
-        .tap-btn .count-display { font-size: 4.5rem; font-weight: 900; line-height: 1.1; margin: 0.15rem 0; font-variant-numeric: tabular-nums; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tap-btn .count-display { display: inline-block; font-size: 4.5rem; font-weight: 900; line-height: 1.1; margin: 0.15rem 0; font-variant-numeric: tabular-nums; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tap-btn .count-display.pop { animation: countpop 0.3s ease-out; }
+        @keyframes countpop { 0% { transform: scale(1); } 35% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) {
+            .tap-btn { animation: none; }
+            .tap-btn.rippling::after, .tap-btn .count-display.pop { animation: none; }
+        }
         .tap-btn .progress-badge { font-size: 0.75rem; background-color: rgba(255, 255, 255, 0.18); padding: 3px 12px; border-radius: 999px; font-weight: 600; backdrop-filter: blur(4px); }
         .sync-box { width: 100%; text-align: left; }
         .sync-box h3 { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.02em; }
@@ -174,25 +211,36 @@
         </header>
 
         <main x-show="subview==='counter'">
-            <div class="stats-grid">
-                <div class="card">
-                    <div class="stat-label" x-text="t('totalJaap')"></div>
-                    <div class="stat-val-total" data-testid="total" x-text="fmt(total)"></div>
+            <div class="ledger">
+                <div class="ledger-cell today">
+                    <div class="ledger-eyebrow">
+                        <span class="kpi-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18h16"/><path d="M8 18a4 4 0 0 1 8 0"/><path d="M12 3v3"/><path d="M4.5 9.5 6 11"/><path d="M19.5 9.5 18 11"/></svg>
+                        </span>
+                        <span x-text="t('today')"></span>
+                    </div>
+                    <div class="ledger-num" :class="numSize(fmt(today))" data-testid="today-total" x-text="fmt(today)"></div>
+                    <div class="mala-pill">
+                        <span class="bead-glyph">
+                            <svg width="34" height="8" viewBox="0 0 34 8" fill="none" aria-hidden="true"><line x1="1" y1="4" x2="33" y2="4" stroke="currentColor" stroke-width="1" opacity="0.35"/><circle cx="4" cy="4" r="2.5" fill="currentColor"/><circle cx="12" cy="4" r="2.5" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="28" cy="4" r="2.5" fill="currentColor"/></svg>
+                        </span>
+                        <span><b data-testid="today-malas" x-text="fmt(todayMalas)"></b> <span x-text="t('malas')"></span></span>
+                    </div>
                 </div>
-                <div class="card">
-                    <div class="stat-label" x-text="t('totalMalas')"></div>
-                    <div class="stat-val-mala" data-testid="malas" x-text="fmt(malas)"></div>
-                </div>
-            </div>
-
-            <div class="stats-grid">
-                <div class="card">
-                    <div class="stat-label" x-text="t('todayJaap')"></div>
-                    <div class="stat-val-total" data-testid="today-total" x-text="fmt(today)"></div>
-                </div>
-                <div class="card">
-                    <div class="stat-label" x-text="t('todayMalas')"></div>
-                    <div class="stat-val-mala" data-testid="today-malas" x-text="fmt(todayMalas)"></div>
+                <div class="ledger-cell total">
+                    <div class="ledger-eyebrow">
+                        <span class="kpi-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>
+                        </span>
+                        <span x-text="t('total')"></span>
+                    </div>
+                    <div class="ledger-num" :class="numSize(fmt(total))" data-testid="total" x-text="fmt(total)"></div>
+                    <div class="mala-pill">
+                        <span class="bead-glyph">
+                            <svg width="34" height="8" viewBox="0 0 34 8" fill="none" aria-hidden="true"><line x1="1" y1="4" x2="33" y2="4" stroke="currentColor" stroke-width="1" opacity="0.35"/><circle cx="4" cy="4" r="2.5" fill="currentColor"/><circle cx="12" cy="4" r="2.5" fill="currentColor"/><circle cx="20" cy="4" r="2.5" fill="currentColor"/><circle cx="28" cy="4" r="2.5" fill="currentColor"/></svg>
+                        </span>
+                        <span><b data-testid="malas" x-text="fmt(malas)"></b> <span x-text="t('malas')"></span></span>
+                    </div>
                 </div>
             </div>
 
@@ -282,6 +330,8 @@
 
         t(k) { return (window.NJ_I18N[this.lang] || window.NJ_I18N.en)[k] || k; },
         fmt(n) { return window.NJUtil.formatNumber(n, this.useK); },
+        // Shrink KPI numbers so long values (lakhs/crores) never clip the ledger cell.
+        numSize(s) { const n = (s || '').length; return n > 9 ? 'xs' : n > 6 ? 'sm' : ''; },
         authErrMsg() {
           const m = { bad_credentials: 'Invalid username or password.',
                       username_taken: 'That username is already taken.',
@@ -357,7 +407,14 @@
           this.local.days[k] = Number(this.local.days[k] || 0) + n;
           this.local.dirty[k] = 1; this.saveLocal(); this.recompute();
           if (navigator.vibrate) navigator.vibrate(40);
+          this.animateTap();
           this.maybeSyncOnMala(prev, this.total);
+        },
+        // Retrigger the ripple + number-pop on each count (remove/reflow/re-add).
+        animateTap() {
+          const btn = document.querySelector('.tap-btn'), num = document.querySelector('.count-display');
+          if (btn) { btn.classList.remove('rippling'); void btn.offsetWidth; btn.classList.add('rippling'); }
+          if (num) { num.classList.remove('pop'); void num.offsetWidth; num.classList.add('pop'); }
         },
         tap() { this.bump(1); },
         addManual() { const v = parseInt(this.manualVal); if (!v || v <= 0) return; this.manualVal = ''; this.bump(v); },
@@ -383,8 +440,9 @@
             const bead = document.createElement('div');
             bead.className = 'bead';
             const radians = (i * (2 * Math.PI / beadCount)) - (Math.PI / 2);
-            bead.style.left = '50%'; bead.style.top = '50%';
-            bead.style.transform = 'translate(' + (Math.cos(radians) * radius) + 'px, ' + (Math.sin(radians) * radius) + 'px)';
+            // Position via left/top so `transform` stays free for the active-bead scale.
+            bead.style.left = 'calc(50% + ' + (Math.cos(radians) * radius) + 'px)';
+            bead.style.top = 'calc(50% + ' + (Math.sin(radians) * radius) + 'px)';
             el.appendChild(bead);
           }
           this.recompute();
