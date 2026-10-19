@@ -198,6 +198,12 @@
                     @click="authMode = authMode==='login' ? 'register' : 'login'; authError=''"
                     x-text="authMode==='login' ? t('register') : t('login')"></button>
 
+            <button x-show="canInstall" @click="install()" class="text-sm w-full mt-1 flex items-center justify-center gap-1.5"
+                    style="color: var(--primary); background:none; border:none; cursor:pointer;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
+                <span x-text="t('install')"></span>
+            </button>
+
             <div class="mt-5 flex items-center justify-center gap-3 text-sm">
                 <select x-model="lang" @change="setLang(lang)" class="rounded-lg px-2 py-1"
                         style="background-color: var(--bg-card); color: var(--text-main); border:1px solid var(--border);">
@@ -228,6 +234,9 @@
                         <svg x-show="dark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="#fbbf24"/><g stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2"/><path d="M12 19.3v2.2"/><path d="M4.2 4.2l1.6 1.6"/><path d="M18.2 18.2l1.6 1.6"/><path d="M2.5 12h2.2"/><path d="M19.3 12h2.2"/><path d="M4.2 19.8l1.6-1.6"/><path d="M18.2 5.8l1.6-1.6"/></g></svg>
                     </button>
                 </div>
+                <button class="hdr-btn" x-show="canInstall" @click="install()" :title="t('install')" :aria-label="t('install')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
+                </button>
                 <button class="hdr-btn" data-testid="refresh" @click="refresh()" :title="t('refresh')" :aria-label="t('refresh')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
                 </button>
@@ -355,6 +364,8 @@
 
     <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    // Capture the install prompt before Alpine boots (it can fire early), so the button can offer it.
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__njInstallPrompt = e; });
     // Draw each bar's value above it (formatted + theme-aware colour via plugin options).
     const barLabels = {
       id: 'barLabels',
@@ -387,6 +398,15 @@
         local: { days: {}, dirty: {} },
         total: 0, today: 0, todayMalas: 0, current: 0, malas: 0,
         lastSync: 0, syncMsg: '', _syncStarted: false,
+        canInstall: false, deferredPrompt: null,
+
+        async install() {
+          if (!this.deferredPrompt) return;
+          this.deferredPrompt.prompt();
+          await this.deferredPrompt.userChoice;
+          this.deferredPrompt = null;
+          this.canInstall = false;
+        },
 
         t(k) { return (window.NJ_I18N[this.lang] || window.NJ_I18N.en)[k] || k; },
         fmt(n) { return window.NJUtil.formatNumber(n, this.useK, this.lang); },
@@ -404,6 +424,10 @@
         toggleTheme() { this.dark = !this.dark; localStorage.setItem('nj_d', this.dark); if (this.chart) this.drawChart(); },
 
         async init() {
+          const setPrompt = e => { this.deferredPrompt = e; this.canInstall = true; };
+          if (window.__njInstallPrompt) setPrompt(window.__njInstallPrompt);
+          window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); setPrompt(e); });
+          window.addEventListener('appinstalled', () => { this.canInstall = false; this.deferredPrompt = null; });
           this.loadLocal();
           if (this.token) { this.view = 'app'; this.recompute(); this.pull().catch(() => {}); this.startSync(); }
           else { this.recompute(); }
