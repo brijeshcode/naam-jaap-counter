@@ -23,4 +23,24 @@ A simple app to count your mantra jaap on a digital 108-bead mala.
 - Your account stays signed in on **one device** at a time.
 - **Reset today's count** clears only today's jaap (it can't be undone).
 
+## Run locally (dev)
+
+Requires PHP 8+ and MySQL/MariaDB (XAMPP provides both).
+
+```bash
+# 1. Start MySQL (XAMPP Control Panel → Start MySQL)
+
+# 2. One-time DB setup
+C:\xampp\mysql\bin\mysql -u root -e "CREATE DATABASE IF NOT EXISTS naam_jaap CHARACTER SET utf8mb4"
+C:\xampp\mysql\bin\mysql -u root naam_jaap < schema.sql
+
+# 3. Start the app (from the project root)
+php -S localhost:8000
+```
+
+Then open **http://localhost:8000/index.php**.
+
+- DB credentials come from `.env` (defaults: host `127.0.0.1`, db `naam_jaap`, user `root`, no password — matches XAMPP).
+- `localhost` is a secure context, so the PWA **install button** shows in Chrome/Edge.
+
 Happy chanting! 🧡

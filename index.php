@@ -18,14 +18,27 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         :root {
             --bg-main: #f9f6f0; --bg-card: #ffffff; --text-main: #2c2520; --text-muted: #786d66;
-            --primary: #ea580c; --primary-light: #ffedd5; --bead-off: #e5e0d8; --bead-border: #c4b9ae;
-            --bead-on: #f97316; --bead-glow: rgba(249, 115, 22, 0.4); --border: #ebdcd0;
+            --primary: #ea580c; --bead-off: #e5e0d8; --bead-border: #c4b9ae; --border: #ebdcd0;
+        }
+        /* Derived tints live on <body> (not :root) so color-mix resolves against the
+           active theme + accent — dark-mode & data-accent are set on <body>. */
+        body {
+            --primary-light: color-mix(in srgb, var(--primary) 14%, var(--bg-card));
+            --bead-on: var(--primary);
+            --bead-glow: color-mix(in srgb, var(--primary) 45%, transparent);
+            --grad-top: color-mix(in srgb, var(--primary) 82%, #fff);
         }
         body.dark-mode {
             --bg-main: #120e0c; --bg-card: #1c1714; --text-main: #f4efe9; --text-muted: #a3968e;
-            --primary: #ff7830; --primary-light: #2c1a10; --bead-off: #2c2420; --bead-border: #423730;
-            --bead-on: #ff7830; --bead-glow: rgba(255, 120, 48, 0.5); --border: #332924;
+            --bead-off: #2c2420; --bead-border: #423730; --border: #332924;
         }
+        /* Accent presets — apply in both light and dark via the derived tints above. */
+        body[data-accent="blue"]   { --primary: #1d4ed8; } /* royal blue */
+        body[data-accent="green"]  { --primary: #047857; } /* emerald */
+        body[data-accent="purple"] { --primary: #6d28d9; } /* amethyst */
+        body[data-accent="rose"]   { --primary: #9f1239; } /* ruby */
+        body[data-accent="gold"]   { --primary: #a16207; } /* antique gold */
+        body[data-accent="teal"]   { --primary: #0f766e; } /* deep teal */
         body {
             background-color: var(--bg-main); color: var(--text-main); min-height: 100vh;
             display: flex; flex-direction: column; justify-content: space-between;
@@ -61,6 +74,10 @@
             border-right: 1.5px solid var(--text-muted); border-bottom: 1.5px solid var(--text-muted); transform: translateY(-25%) rotate(45deg);
         }
         .sync-flag { font-size: 0.68rem; color: #ef4444; font-weight: 600; }
+        .hdr-accent { position: relative; display: flex; align-items: center; }
+        .accent-pop { position: absolute; top: 100%; right: 0; margin-top: 0.45rem; display: flex; gap: 0.5rem; padding: 0.6rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.8rem; box-shadow: 0 10px 28px rgba(0,0,0,0.15); z-index: 50; }
+        .accent-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; outline: 2px solid transparent; cursor: pointer; padding: 0; transition: outline-color 0.15s; }
+        .accent-dot.sel { outline-color: var(--text-main); outline-offset: 1px; }
         main {
             flex: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem;
             max-width: 420px; width: 100%; margin: 0 auto; justify-content: space-around; gap: 1rem;
@@ -68,12 +85,12 @@
         /* KPI ledger: Today | Total, split by a hairline "thread". */
         .ledger { display: grid; grid-template-columns: 1fr 1fr; width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1.5rem; overflow: hidden; box-shadow: 0 8px 24px rgba(120, 60, 10, 0.06); }
         .ledger-cell { padding: 1rem 1.15rem 1.1rem; }
-        .ledger-cell.today { background: linear-gradient(155deg, var(--primary-light), transparent 72%); }
+        .ledger-cell.today { background: var(--primary-light); }
         .ledger-cell.total { border-left: 1px solid var(--border); }
         .ledger-eyebrow { display: flex; align-items: center; gap: 0.45rem; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
         .kpi-chip { flex: none; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; }
         .kpi-chip svg { width: 15px; height: 15px; }
-        .ledger-cell.today .kpi-chip { background: rgba(234, 88, 12, 0.12); color: var(--primary); }
+        .ledger-cell.today .kpi-chip { background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); }
         .ledger-cell.total .kpi-chip { background: rgba(120, 60, 10, 0.07); color: var(--text-muted); }
         body.dark-mode .ledger-cell.total .kpi-chip { background: rgba(255, 255, 255, 0.07); }
         .ledger-num { font-family: 'Fraunces', Georgia, serif; font-size: 2.35rem; font-weight: 600; line-height: 0.95; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -90,8 +107,9 @@
             background-color: var(--bg-card); border: 1px solid var(--border); padding: 0.85rem 1rem;
             border-radius: 1.25rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.01);
         }
-        .mala-canvas-space { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; margin: 0.75rem 0; }
-        .beads-circle-hull { position: absolute; width: 320px; height: 320px; top: 0; left: 0; border-radius: 50%; pointer-events: none; }
+        /* Mala scales down on small screens (82vw) but never past 320px; beads & button track it via %. */
+        .mala-canvas-space { position: relative; width: min(320px, 82vw); height: min(320px, 82vw); display: flex; align-items: center; justify-content: center; margin: 0.75rem 0; }
+        .beads-circle-hull { position: absolute; width: 100%; height: 100%; top: 0; left: 0; border-radius: 50%; pointer-events: none; }
         .bead {
             position: absolute; width: 7.5px; height: 7.5px; background-color: var(--bead-off);
             border: 1px solid var(--bead-border); border-radius: 50%; top: 50%; left: 50%;
@@ -100,13 +118,12 @@
         }
         .bead.active { background-color: var(--bead-on); border-color: var(--bead-on); transform: scale(1.5); box-shadow: 0 0 6px var(--bead-glow); z-index: 2; }
         .tap-btn {
-            position: relative; z-index: 10; width: 236px; height: 236px; border-radius: 50%; overflow: hidden;
-            background: linear-gradient(135deg, #f97316, #ea580c); border: 8px solid var(--primary-light);
+            position: relative; z-index: 10; width: 73.75%; height: 73.75%; border-radius: 50%; overflow: hidden;
+            background: linear-gradient(135deg, var(--grad-top), var(--primary)); border: 8px solid var(--primary-light);
             color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; outline: none; box-shadow: 0 12px 32px rgba(234, 88, 12, 0.2);
+            cursor: pointer; outline: none; box-shadow: 0 12px 32px color-mix(in srgb, var(--primary) 20%, transparent);
             transition: transform 0.08s ease; animation: breathe 3.6s ease-in-out infinite;
         }
-        body.dark-mode .tap-btn { background: linear-gradient(135deg, #ff7830, #e05300); box-shadow: 0 12px 32px rgba(255, 120, 48, 0.15); }
         .tap-btn:active { transform: scale(0.96); }
         /* Ripple that blooms from the centre on each tap. */
         .tap-btn::after {
@@ -116,11 +133,11 @@
         .tap-btn.rippling::after { animation: ripple 0.55s ease-out; }
         @keyframes ripple { 0% { opacity: 0.6; transform: scale(0.25); } 100% { opacity: 0; transform: scale(1.4); } }
         @keyframes breathe {
-            0%, 100% { box-shadow: 0 12px 32px rgba(234, 88, 12, 0.18); }
-            50% { box-shadow: 0 14px 44px rgba(234, 88, 12, 0.38); }
+            0%, 100% { box-shadow: 0 12px 32px color-mix(in srgb, var(--primary) 18%, transparent); }
+            50% { box-shadow: 0 14px 44px color-mix(in srgb, var(--primary) 38%, transparent); }
         }
         .tap-btn .action-txt { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; opacity: 0.85; text-transform: uppercase; }
-        .tap-btn .count-display { display: inline-block; font-size: 4.5rem; font-weight: 900; line-height: 1.1; margin: 0.15rem 0; font-variant-numeric: tabular-nums; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tap-btn .count-display { display: inline-block; font-size: clamp(2.6rem, 14vw, 4.5rem); font-weight: 900; line-height: 1.1; margin: 0.15rem 0; font-variant-numeric: tabular-nums; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .tap-btn .count-display.pop { animation: countpop 0.3s ease-out; }
         @keyframes countpop { 0% { transform: scale(1); } 35% { transform: scale(1.2); } 100% { transform: scale(1); } }
         @media (prefers-reduced-motion: reduce) {
@@ -172,7 +189,7 @@
         .chart-types button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     </style>
 </head>
-<body x-data="app()" x-init="init()" :class="dark ? 'dark-mode' : ''">
+<body x-data="app()" x-init="init()" :class="dark ? 'dark-mode' : ''" :data-accent="accent">
 
     <!-- ===================== AUTH VIEW ===================== -->
     <div x-cloak x-show="view==='auth'" class="min-h-screen w-full flex flex-col items-center justify-center p-6"
@@ -233,6 +250,16 @@
                         <svg x-show="!dark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="#fcd34d" stroke="#f59e0b" stroke-width="1.2" stroke-linejoin="round"/></svg>
                         <svg x-show="dark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="#fbbf24"/><g stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2"/><path d="M12 19.3v2.2"/><path d="M4.2 4.2l1.6 1.6"/><path d="M18.2 18.2l1.6 1.6"/><path d="M2.5 12h2.2"/><path d="M19.3 12h2.2"/><path d="M4.2 19.8l1.6-1.6"/><path d="M18.2 5.8l1.6-1.6"/></g></svg>
                     </button>
+                    <div class="hdr-accent" @click.outside="showAccents=false">
+                        <button class="hdr-btn" @click="showAccents=!showAccents" :title="t('accentColor')" :aria-label="t('accentColor')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r="1.3" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1.3" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1.3" fill="currentColor"/><path d="M12 2a10 10 0 1 0 0 20 2.5 2.5 0 0 0 2-4 2.5 2.5 0 0 1 2-4h2a4 4 0 0 0 4-4 10 10 0 0 0-10-8z"/></svg>
+                        </button>
+                        <div class="accent-pop" x-show="showAccents" x-cloak>
+                            <template x-for="(hex, name) in accents" :key="name">
+                                <button class="accent-dot" :class="accent===name ? 'sel' : ''" :style="'background:'+hex" @click="setAccent(name)" :aria-label="name"></button>
+                            </template>
+                        </div>
+                    </div>
                 </div>
                 <button class="hdr-btn" x-show="canInstall" @click="install()" :title="t('install')" :aria-label="t('install')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
@@ -392,6 +419,9 @@
         lang: localStorage.getItem('nj_lang') || 'en',
         useK: localStorage.getItem('nj_k') === '1',
         dark: localStorage.getItem('nj_d') === 'true',
+        accent: localStorage.getItem('nj_accent') || 'orange',
+        showAccents: false,
+        accents: { orange:'#ea580c', blue:'#1d4ed8', green:'#047857', purple:'#6d28d9', rose:'#9f1239', gold:'#a16207', teal:'#0f766e' },
         token: localStorage.getItem('nj_token') || '',
         username: '', password: '', authError: '',
         manualVal: '',
@@ -421,13 +451,17 @@
         // Redraw so the chart's baked-in colours/number format follow the new setting.
         setLang(l) { this.lang = l; localStorage.setItem('nj_lang', l); if (this.chart) this.drawChart(); },
         toggleK() { this.useK = !this.useK; localStorage.setItem('nj_k', this.useK ? '1' : '0'); if (this.chart) this.drawChart(); },
-        toggleTheme() { this.dark = !this.dark; localStorage.setItem('nj_d', this.dark); if (this.chart) this.drawChart(); },
+        toggleTheme() { this.dark = !this.dark; localStorage.setItem('nj_d', this.dark); this.syncThemeColor(); if (this.chart) this.drawChart(); },
+        setAccent(a) { this.accent = a; localStorage.setItem('nj_accent', a); this.showAccents = false; this.syncThemeColor(); if (this.chart) this.drawChart(); },
+        // Keep the browser chrome / PWA theme-color in step with the chosen accent.
+        syncThemeColor() { this.$nextTick(() => { const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = getComputedStyle(document.body).getPropertyValue('--primary').trim(); }); },
 
         async init() {
           const setPrompt = e => { this.deferredPrompt = e; this.canInstall = true; };
           if (window.__njInstallPrompt) setPrompt(window.__njInstallPrompt);
           window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); setPrompt(e); });
           window.addEventListener('appinstalled', () => { this.canInstall = false; this.deferredPrompt = null; });
+          this.syncThemeColor();
           this.loadLocal();
           if (this.token) { this.view = 'app'; this.recompute(); this.pull().catch(() => {}); this.startSync(); }
           else { this.recompute(); }
@@ -520,14 +554,14 @@
         // Build the 108-bead ring into the hull element when the app view renders.
         buildBeads(el) {
           if (el.childElementCount) return;
-          const beadCount = 108, radius = 146;
+          const beadCount = 108, radiusPct = 45.625; // 146/320 — % so beads track the responsive hull size.
           for (let i = 0; i < beadCount; i++) {
             const bead = document.createElement('div');
             bead.className = 'bead';
             const radians = (i * (2 * Math.PI / beadCount)) - (Math.PI / 2);
             // Position via left/top so `transform` stays free for the active-bead scale.
-            bead.style.left = 'calc(50% + ' + (Math.cos(radians) * radius) + 'px)';
-            bead.style.top = 'calc(50% + ' + (Math.sin(radians) * radius) + 'px)';
+            bead.style.left = 'calc(50% + ' + (Math.cos(radians) * radiusPct) + '%)';
+            bead.style.top = 'calc(50% + ' + (Math.sin(radians) * radiusPct) + '%)';
             el.appendChild(bead);
           }
           this.recompute();
@@ -585,9 +619,10 @@
           if (this.chart) this.chart.destroy();
           const tick = this.dark ? '#a3968e' : '#786d66';
           const grid = this.dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+          const accent = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#f97316';
           this.chart = new Chart(ctx, {
             type: 'bar',
-            data: { labels: data.labels, datasets: [{ label: this.t(this.chartType), data: data.values, backgroundColor: '#f97316', borderRadius: 6 }] },
+            data: { labels: data.labels, datasets: [{ label: this.t(this.chartType), data: data.values, backgroundColor: accent, borderRadius: 6 }] },
             options: {
               responsive: true, layout: { padding: { top: 18 } },
               plugins: {
